@@ -6,10 +6,20 @@
     <title>Document</title>
 </head>
 <body>
-    <form method="POST" action="/login">
+    <form id="login_form" method="POST" action="/login">
+        <span>Email</span>
         <input type="email" name="username" required/>
+        <br><br/>
+        <span>Password</span>
         <input type="text" name="password" required/>
         <button type="submit">Login</button>
     </form>
+    <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const redirectURL = urlParams.get('redirectURL')
+        let login_form = document.getElementById('login_form');
+        login_form.setAttribute("action", `/login?redirectURL=${redirectURL}`);
+    </script>
 </body>
 </html>

@@ -2,27 +2,17 @@ const { redisKeys } = require('../lib/constants');
 const { GetAccessToken, verifyToken } = require("../lib/helper");
 const redisService = require('../services/redisService');
 
-exports.getSession = async(req, res) => {
-  console.log('session', req.sessionID)
-  const jwt = req.session.jwt;
-  // console.log('getSession jwt: ', jwt, '\n', req.cookies.jwt);
-
-
-
-  // const {authorization} = req.headers
-  // const token = authorization ? authorization.split(" ")[1] : "";
-  // console.log('token: ', token);
-  
-  // if(!token) return res.json({ isTokenValid: false, error: "No jwt found."});
-
+exports.getSession = async (req, res) => {
   // check valid token
-  const isTokenValid = verifyToken(jwt.access_token);
-  if (isTokenValid?.valid) {
-    req.session.cookie.maxAge += 1000 * 60 * 60 * 3; // Add 3 hours in milliseconds
-    return res.json({ isTokenValid: true, message: "Authenticated successfully!" });
+  const token = req.session.token;
+  if (token && token.access_token) {
+    const isTokenValid = verifyToken(token.access_token);
+    if (isTokenValid?.valid) {
+      req.session.cookie.maxAge += 1000 * 60 * 60 * 3; // Add 3 hours in milliseconds
+      return res.status(200).json({ message: "Authenticated successfully!", data: token });
+    }
   }
-
-  res.json({ isTokenValid: false, error: "Session has been expired."});
+  res.status(401).json({ error: "Session has been expired." });
 };
 
 exports.login = (req, res) => {
@@ -30,42 +20,56 @@ exports.login = (req, res) => {
   if (!redirectURL) return res.redirect(302, "back");
 
   // check valid token
-  const jwt = req.session.jwt;
-  console.log('jwt: ', jwt);
+  const token = req.session.token;
+  if (token && token.access_token) {
+    const isTokenValid = verifyToken(token.access_token);
+    if (isTokenValid?.valid) {
+      req.session.cookie.maxAge += 1000 * 60 * 60 * 3; // Add 3 hours in milliseconds
+      // return res.json({ message: "Successfully logged in!", data: token });
+      return res.redirect(redirectURL);
+    }
+  }
 
-  const isTokenValid = verifyToken(jwt);;
-  console.log('isTokenValid: ', isTokenValid);
-  if (isTokenValid?.valid) return res.redirect(redirectURL);
-
+  // Render login page
   res.render("login");
 };
 
+let user = {
+  _id: "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
+  username: 'a@gmail.com',
+  password: "123",
+  role: "095be615-a8ad-4c33-8e9c-c7612fbf6d4f",
+}
+
 exports.doLogin = async (req, res) => {
+  const { redirectURL } = req.query;
+  if (!redirectURL) return res.redirect(302, "back");
   try {
     const { username, password } = req.body;
     if (!username) throw new Error('Username is required.');
     if (!password) throw new Error('Password is required.');
-    
-    let existToken = await redisService.redis('hgetall', `${redisKeys.session}:${username}`);
-    if(Object.keys(existToken).length) {
-      const isTokenValid = await verifyToken(existToken.access_token);
-      if (isTokenValid?.valid) return res.redirect('http://localhost:3000');
-    }
 
-    let token = GetAccessToken(req.body);
-    req.session.jwt = token;
-    // res.cookie('jwt', token, {
-    //   httpOnly: true,
-    // });
-    // await redisService.redis('hmset', `${redisKeys.session}:${username}`,  token);
+    // verify username and check..
+    let response = user;
+    if (username !== response.username || password !== response.password) return res.status(401).json({ error: 'Unauthorized' });
 
-    return res.json({status: true, message: "Successfully logged in!", data: token});
-  } catch(error) {
+    // generate token
+    let token = GetAccessToken(response);
+    req.session.token = token;
+    if (redirectURL) return res.redirect(redirectURL);
+    return res.json({ message: "Successfully logged in!", data: token });
+  } catch (error) {
     console.log('error: ', error);
-    return res.status(401).json({status: false, message: "Login fail.", data: error});
+    return res.status(401).json({ error: "Login failed!.", data: error });
   }
 };
 
 exports.logout = (req, res) => {
-  console.log("Logout...");
+  const { redirectURL } = req.query;
+  req.session.destroy(err => {
+    if (err) {
+      return console.log(err);
+    }
+    res.redirect(redirectURL || process.env.MAIN_DOMIN || "/login")
+  });
 };

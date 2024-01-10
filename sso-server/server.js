@@ -44,7 +44,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: false,
-      domain: '.example.local',
+      domain: '.zenmonk.in',
       maxAge: 1000 * 60 * 60 * 3 // 3 hours in second
       // httpOnly: false,
       //maxAge: 1000 * 60 * 1440, // 1440 minutes or 1 day

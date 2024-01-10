@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 
 function GetAccessToken (payload) {
-    const { username } = payload;
-    const access_token = jwt.sign({ sub: username }, process.env.JWT_ACCESS_SECRET, {});
-    const refresh_token = GenerateRefreshToken(username);
-    
+    const { _id, role } = payload;
+    if (!_id || !role) throw new Error("User id and role id is required");
+    const access_token = jwt.sign({ _id, role }, process.env.JWT_ACCESS_SECRET, {});
+    const refresh_token = GenerateRefreshToken({ _id, role });
     return { access_token, refresh_token };
 }
 
