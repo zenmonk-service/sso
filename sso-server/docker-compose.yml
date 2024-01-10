@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  # Redis service
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - sso_network
+    volumes: 
+      - cache:/data
+
+  # Redis commander
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    build: .
+    restart: always
+    environment:
+      - REDIS_HOSTS=redis
+    ports:
+        - "8081:8081"
+    networks:
+      - sso_network
+
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5555:5555
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - sso_network
+    env_file:
+      - ./.env.dev
+    environment:
+      REDIS_HOST: redis
+    depends_on:
+      - redis
+    restart: on-failure
+
+networks:
+  sso_network:
+    driver: bridge
+
+volumes:
+  cache: {}
