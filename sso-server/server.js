@@ -24,7 +24,7 @@ app.use(express.json({ limit: "50mb", extended: true }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.static(path.join(__dirname, "Public"), {}));
 
-const allowedOrigins = ["http://localhost:3000", "http://public.zenmonk.in"];
+const allowedOrigins = ["http://localhost:3000", "http://localhost:4200", "http://public.zenmonk.in"];
 app.use(
   cors({
     origin: allowedOrigins,
@@ -49,8 +49,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: false,
-      domain: '.zenmonk.in',
       maxAge: 1000 * 60 * 60 * 3 // 3 hours in second
+      // domain: '.zenmonk.in',
       // httpOnly: false,
       //maxAge: 1000 * 60 * 1440, // 1440 minutes or 1 day
     },

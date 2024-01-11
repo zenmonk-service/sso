@@ -17,6 +17,7 @@ exports.getSession = async (req, res) => {
 
 exports.login = (req, res) => {
   const { redirectURL } = req.query;
+  console.log('redirectURL: ', redirectURL);
   if (!redirectURL) return res.redirect(302, "back");
 
   // check valid token
