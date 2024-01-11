@@ -6,7 +6,7 @@ function App() {
   useEffect(() => {
     const login = async () => {
       try {
-        let response = await fetch('http://localhost:5555', {
+        let response = await fetch(process.env.REACT_APP_SSO_HOST || '', {
           credentials: 'include', // To include cookies
           headers: {
             'Content-type': 'application/json'
@@ -32,10 +32,10 @@ function App() {
         isLoggedIn ? (
           <div>
             <h4>Logged in</h4> 
-            <a href='http://localhost:5555/logout?redirectURL=http://localhost:3000'><button>Logout</button></a>
+            <a href={`${process.env.REACT_APP_SSO_HOST}/logout?redirectURL=${process.env.REACT_APP_APP_HOST}`}><button>Logout</button></a>
           </div>
         ) : (
-          <a href='http://localhost:5555/login?redirectURL=http://localhost:3000'><button>Login</button></a>
+          <a href={`${process.env.REACT_APP_SSO_HOST}/login?redirectURL=${process.env.REACT_APP_APP_HOST}`}><button>Login</button></a>
         )
       }
     </div>
