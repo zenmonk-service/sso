@@ -24,7 +24,7 @@ app.use(express.json({ limit: "50mb", extended: true }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(express.static(path.join(__dirname, "Public"), {}));
 
-const allowedOrigins = ["http://localhost:3000", "http://localhost:3001", "http://example.local:3000", 'http://db.example.local:3000'];
+const allowedOrigins = ["http://localhost:3000", "http://public.zenmonk.in"];
 app.use(
   cors({
     origin: allowedOrigins,
@@ -32,6 +32,11 @@ app.use(
   })
 );
 
+// app.use(function (req, res, next) {
+// 	if ( req.headers && req.headers.origin ) res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
+// 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+// 	next();
+// })
 
 // Redis connection
 const { connectRedisClient } = require("./config/redis");
